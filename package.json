@@ -1,0 +1,32 @@
+{
+  "name": "nqr",
+  "version": "1.0.0",
+  "type": "module",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js"
+    }
+  },
+  "module": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "files": ["dist"],
+  "scripts": {
+    "build": "rslib build",
+    "check": "biome check --write",
+    "dev": "rslib build --watch",
+    "format": "biome format --write",
+    "test": "vitest run"
+  },
+  "devDependencies": {
+    "@biomejs/biome": "^1.9.3",
+    "@rslib/core": "^0.2.2",
+    "@types/node": "^22.8.1",
+    "qr-scanner-wechat": "^0.1.3",
+    "sharp": "^0.33.5",
+    "typescript": "^5.7.2",
+    "uqr": "^0.1.2",
+    "vitest": "^2.1.8"
+  },
+  "private": true
+}
