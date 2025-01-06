@@ -1,6 +1,7 @@
 {
   "name": "nqr",
   "version": "1.0.0",
+  "private": true,
   "type": "module",
   "exports": {
     ".": {
@@ -10,23 +11,35 @@
   },
   "module": "./dist/index.js",
   "types": "./dist/index.d.ts",
-  "files": ["dist"],
+  "files": [
+    "dist"
+  ],
   "scripts": {
     "build": "rslib build",
     "check": "biome check --write",
     "dev": "rslib build --watch",
     "format": "biome format --write",
-    "test": "vitest run"
+    "test": "vitest run",
+    "tup": "taze major -I",
+    "postinstall": "npx simple-git-hooks"
   },
   "devDependencies": {
-    "@biomejs/biome": "^1.9.3",
+    "@biomejs/biome": "^1.9.4",
     "@rslib/core": "^0.2.2",
-    "@types/node": "^22.8.1",
+    "@types/node": "^22.10.5",
+    "lint-staged": "^15.3.0",
     "qr-scanner-wechat": "^0.1.3",
     "sharp": "^0.33.5",
+    "simple-git-hooks": "^2.11.1",
+    "taze": "^0.18.0",
     "typescript": "^5.7.2",
     "uqr": "^0.1.2",
     "vitest": "^2.1.8"
   },
-  "private": true
+  "simple-git-hooks": {
+    "pre-commit": "pnpm lint-staged"
+  },
+  "lint-staged": {
+    "*": "biome lint --write ."
+  }
 }

@@ -1,7 +1,10 @@
 import { expect, test } from 'vitest';
-import { squared } from '../src/index';
+import { renderImage } from '../src/image';
 
-test('squared', () => {
-  expect(squared(2)).toBe(4);
-  expect(squared(12)).toBe(144);
+test('renderImage', async () => {
+  const file = await renderImage('https://github.com/nqr', {
+    pixelSize: 20,
+    pixelStyle: 'Rounded',
+  });
+  expect(file).toBeInstanceOf(File);
 });
