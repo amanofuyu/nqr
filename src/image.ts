@@ -299,26 +299,18 @@ export async function renderImage(
   // draw background
   if (background) {
     ctx.globalCompositeOperation = 'lighten';
-    const image = new Image();
-    const url = URL.createObjectURL(background);
 
-    await new Promise<void>((resolve) => {
-      image.onload = () => {
-        resolve();
-      };
-      image.src = url;
-    });
+    const imageBitmap = await createImageBitmap(background);
 
-    const { x, y, w, h } = parseImageSizeData(image.width, image.height);
-    ctx.drawImage(image, x, y, w, h, 0, 0, size, size);
-    URL.revokeObjectURL(url);
+    const { x, y, w, h } = parseImageSizeData(imageBitmap.width, imageBitmap.height);
+
+    ctx.drawImage(imageBitmap, x, y, w, h, 0, 0, size, size);
+
+    imageBitmap.close();
   }
 
   // draw logo
   if (logo) {
-    const image = new Image();
-    const url = URL.createObjectURL(logo);
-
     const metric = Math.round(size / 5);
 
     const logoSize = Math.round(metric / 5) * 4;
@@ -334,22 +326,22 @@ export async function renderImage(
     );
     ctx.fill();
 
-    image.onload = () => {
-      const { x, y, w, h } = parseImageSizeData(image.width, image.height);
-      ctx.drawImage(
-        image,
-        x,
-        y,
-        w,
-        h,
-        size / 2 - logoSize / 2,
-        size / 2 - logoSize / 2,
-        logoSize,
-        logoSize,
-      );
-      URL.revokeObjectURL(url);
-    };
-    image.src = url;
+    const imageBitmap = await createImageBitmap(logo);
+    const { x, y, w, h } = parseImageSizeData(imageBitmap.width, imageBitmap.height);
+
+    ctx.drawImage(
+      imageBitmap,
+      x,
+      y,
+      w,
+      h,
+      size / 2 - logoSize / 2,
+      size / 2 - logoSize / 2,
+      logoSize,
+      logoSize,
+    );
+
+    imageBitmap.close();
   }
 
   const blob = await offscreenCanvas.convertToBlob();

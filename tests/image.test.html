@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+</head>
+
+<body>
+  <div id="qrcode"></div>
+
+  <script type="module">
+    import { renderImage } from '../dist/index.js';
+    import { scan } from '../node_modules/qr-scanner-wechat/dist/index.mjs'
+
+    try {
+      const file = await renderImage('https://github.com/nqr', {
+        darkColor: '#f50',
+        pixelSize: 20,
+        pixelStyle: 'Rounded',
+      });
+      const url = URL.createObjectURL(file);
+      const img = document.createElement('img');
+      img.src = url;
+      document.getElementById('qrcode').appendChild(img);
+
+      const result = await scan(img) // Or ImageElement
+      const textNode = document.createTextNode(result.text);
+      document.getElementById('qrcode').appendChild(textNode);
+    } catch (error) {
+      console.error(error);
+    }
+  </script>
+</body>
+
+</html>
