@@ -14,14 +14,20 @@
     import { scan } from '../node_modules/qr-scanner-wechat/dist/index.mjs'
 
     try {
-      const file = await renderImage('https://github.com/nqr', {
+      const blob = await fetch('./photo.webp').then(res => res.blob());
+      const offscreenCanvas = await renderImage('https://github.com/nqr', {
+        ecc: 'Q',
         darkColor: '#f50',
         pixelSize: 20,
         pixelStyle: 'Rounded',
+        background: blob,
       });
+      const file = await offscreenCanvas.convertToBlob();
       const url = URL.createObjectURL(file);
       const img = document.createElement('img');
       img.src = url;
+      img.width = 200;
+      img.height = 200;
       document.getElementById('qrcode').appendChild(img);
 
       const result = await scan(img) // Or ImageElement

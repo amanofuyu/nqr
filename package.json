@@ -1,6 +1,6 @@
 {
   "name": "nqr",
-  "version": "1.0.0",
+  "version": "0.0.1",
   "private": true,
   "type": "module",
   "exports": {
@@ -11,9 +11,7 @@
   },
   "module": "./dist/index.js",
   "types": "./dist/index.d.ts",
-  "files": [
-    "dist"
-  ],
+  "files": ["dist"],
   "scripts": {
     "build": "rslib build",
     "check": "biome check --write",
@@ -25,7 +23,7 @@
   },
   "devDependencies": {
     "@biomejs/biome": "^1.9.4",
-    "@rslib/core": "^0.2.2",
+    "@rslib/core": "^0.3.0",
     "@types/node": "^22.10.5",
     "lint-staged": "^15.3.0",
     "qr-scanner-wechat": "^0.1.3",

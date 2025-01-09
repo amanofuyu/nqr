@@ -17,6 +17,10 @@ export interface DrawOptions {
 
 export type QrCodeGenerateImageOptions = QrCodeGenerateOptions & DrawOptions;
 
+type CanvasContext =
+  | CanvasRenderingContext2D
+  | OffscreenCanvasRenderingContext2D;
+
 function drawRectCell({
   x,
   y,
@@ -28,7 +32,7 @@ function drawRectCell({
   y: number;
   color: string;
   size: number;
-  ctx: CanvasRenderingContext2D | OffscreenCanvasRenderingContext2D;
+  ctx: CanvasContext;
 }) {
   ctx.fillStyle = color;
   ctx.fillRect(x, y, size, size);
@@ -45,7 +49,7 @@ function drawDotCell({
   y: number;
   color: string;
   radius: number;
-  ctx: CanvasRenderingContext2D | OffscreenCanvasRenderingContext2D;
+  ctx: CanvasContext;
 }) {
   ctx.fillStyle = color;
   ctx.strokeStyle = color;
@@ -72,7 +76,7 @@ function drawRoundedCell({
   isDark: boolean;
   lightColor: string;
   darkColor: string;
-  ctx: CanvasRenderingContext2D | OffscreenCanvasRenderingContext2D;
+  ctx: CanvasContext;
   cornerIsRounded: { LT: boolean; RT: boolean; LB: boolean; RB: boolean };
 }) {
   const halfSize = size / 2;
@@ -104,6 +108,78 @@ function drawRoundedCell({
   }
 }
 
+async function drawBackground({
+  ctx,
+  image,
+  size,
+}: {
+  ctx: CanvasContext;
+  image: File;
+  size: number;
+}) {
+  ctx.globalCompositeOperation = 'lighten';
+
+  const imageBitmap = await createImageBitmap(image);
+
+  const { x, y, w, h } = parseImageSizeData(
+    imageBitmap.width,
+    imageBitmap.height,
+  );
+
+  ctx.drawImage(imageBitmap, x, y, w, h, 0, 0, size, size);
+
+  ctx.globalCompositeOperation = 'source-over';
+
+  imageBitmap.close();
+}
+
+async function drawLogo({
+  ctx,
+  image,
+  size,
+  lightColor,
+}: {
+  ctx: CanvasContext;
+  image: File;
+  size: number;
+  lightColor: string;
+}) {
+  const metric = Math.round(size / 5);
+
+  const logoSize = Math.round(metric / 5) * 4;
+
+  ctx.strokeStyle = lightColor;
+  ctx.fillStyle = lightColor;
+  ctx.roundRect(
+    size / 2 - metric / 2,
+    size / 2 - metric / 2,
+    metric,
+    metric,
+    metric / 10,
+  );
+  ctx.fill();
+
+  const imageBitmap = await createImageBitmap(image);
+  const { x, y, w, h } = parseImageSizeData(
+    imageBitmap.width,
+    imageBitmap.height,
+  );
+
+  ctx.drawImage(
+    imageBitmap,
+    x,
+    y,
+    w,
+    h,
+    size / 2 - logoSize / 2,
+    size / 2 - logoSize / 2,
+    logoSize,
+    logoSize,
+  );
+
+  imageBitmap.close();
+}
+
 function parseImageSizeData(width: number, height: number) {
   let x = 0;
   let y = 0;
@@ -129,7 +205,7 @@ function parseImageSizeData(width: number, height: number) {
 export async function renderImage(
   data: QrCodeGenerateData,
   options: QrCodeGenerateImageOptions = {},
-): Promise<File> {
+): Promise<OffscreenCanvas> {
   const {
     lightColor = '#fff',
     darkColor = '#000',
@@ -298,55 +374,13 @@ export async function renderImage(
 
   // draw background
   if (background) {
-    ctx.globalCompositeOperation = 'lighten';
-
-    const imageBitmap = await createImageBitmap(background);
-
-    const { x, y, w, h } = parseImageSizeData(imageBitmap.width, imageBitmap.height);
-
-    ctx.drawImage(imageBitmap, x, y, w, h, 0, 0, size, size);
-
-    imageBitmap.close();
+    await drawBackground({ ctx, image: background, size });
   }
 
   // draw logo
   if (logo) {
-    const metric = Math.round(size / 5);
-
-    const logoSize = Math.round(metric / 5) * 4;
-
-    ctx.strokeStyle = lightColor;
-    ctx.fillStyle = lightColor;
-    ctx.roundRect(
-      size / 2 - metric / 2,
-      size / 2 - metric / 2,
-      metric,
-      metric,
-      metric / 10,
-    );
-    ctx.fill();
-
-    const imageBitmap = await createImageBitmap(logo);
-    const { x, y, w, h } = parseImageSizeData(imageBitmap.width, imageBitmap.height);
-
-    ctx.drawImage(
-      imageBitmap,
-      x,
-      y,
-      w,
-      h,
-      size / 2 - logoSize / 2,
-      size / 2 - logoSize / 2,
-      logoSize,
-      logoSize,
-    );
-
-    imageBitmap.close();
+    await drawLogo({ ctx, image: logo, size, lightColor });
   }
 
-  const blob = await offscreenCanvas.convertToBlob();
-
-  const file = new File([blob], 'qrcode.png', { type: 'image/png' });
-
-  return file;
+  return offscreenCanvas;
 }
