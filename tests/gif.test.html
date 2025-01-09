@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+</head>
+
+<body>
+  <div id="qrcode"></div>
+
+  <script type="module">
+    import '../node_modules/modern-gif/dist/index.js';
+    import '../dist/index.js';
+
+    const offscreenCanvas = await NQR.renderImage('https://github.com/nqr', {
+      ecc: 'Q',
+      pixelSize: 20,
+      pixelStyle: 'Rounded',
+    });
+
+    const buffer = await window.fetch('./6Je.gif')
+      .then(res => res.arrayBuffer())
+
+    // GIF file format data without image data
+    const gif = modernGif.decode(buffer)
+    console.log(gif)
+
+    // Image data for all frames (workerUrl is optional)
+    const frames = await modernGif.decodeFrames(buffer)
+    console.log(frames)
+    const newFrames = frames.map((frame) => {
+      const canvas = new OffscreenCanvas(frame.width, frame.height)
+      const ctx = canvas.getContext('2d')
+      ctx.putImageData(
+        new ImageData(frame.data, frame.width, frame.height),
+        0,
+        0,
+      )
+      ctx.globalCompositeOperation = 'lighten';
+      ctx.drawImage(offscreenCanvas, 0, 0, frame.width, frame.height)
+      return {
+        ...frame,
+        data: canvas
+      }
+    })
+
+    const output = await modernGif.encode({
+      // workerUrl is optional
+      width: gif.width,
+      height: gif.height,
+      frames: newFrames,
+    })
+
+    const blob = new Blob([output], { type: 'image/gif' })
+
+    const url = URL.createObjectURL(blob);
+    const img = document.createElement('img');
+    img.src = url;
+    img.width = 200;
+    img.height = 200;
+    document.getElementById('qrcode').appendChild(img);
+  </script>
+</body>
+
+</html>

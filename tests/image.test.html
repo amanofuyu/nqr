@@ -10,12 +10,12 @@
   <div id="qrcode"></div>
 
   <script type="module">
-    import { renderImage } from '../dist/index.js';
+    import '../dist/index.js';
     import { scan } from '../node_modules/qr-scanner-wechat/dist/index.mjs'
 
     try {
       const blob = await fetch('./photo.webp').then(res => res.blob());
-      const offscreenCanvas = await renderImage('https://github.com/nqr', {
+      const offscreenCanvas = await NQR.renderImage('https://github.com/nqr', {
         ecc: 'Q',
         darkColor: '#f50',
         pixelSize: 20,
